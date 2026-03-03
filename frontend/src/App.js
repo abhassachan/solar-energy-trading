@@ -1,10 +1,10 @@
 import { useWallet } from './hooks/useWallet';
+import ProducerPanel from './components/ProducerPanel';
 import './App.css';
 
 function App() {
-  const { account, error, connectWallet, disconnectWallet } = useWallet();
+  const { account, signer, error, connectWallet, disconnectWallet } = useWallet();
 
-  // Shorten address for display: 0x1234...5678
   const shortAddress = account
     ? `${account.slice(0, 6)}...${account.slice(-4)}`
     : null;
@@ -14,8 +14,6 @@ function App() {
       {/* Header */}
       <header className="app-header">
         <h1>⚡ Solar Energy Trading</h1>
-
-        {/* Wallet Connection */}
         <div className="wallet-section">
           {account ? (
             <div className="wallet-connected">
@@ -38,7 +36,9 @@ function App() {
       {/* Main Content */}
       <main className="app-main">
         {account ? (
-          <p>✅ Wallet connected! Dashboard coming next...</p>
+          <div className="dashboard">
+            <ProducerPanel signer={signer} account={account} />
+          </div>
         ) : (
           <div className="welcome">
             <h2>Welcome to P2P Solar Energy Trading</h2>
