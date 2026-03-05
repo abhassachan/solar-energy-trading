@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { ethers } from 'ethers';
 import EnergyTokenABI from '../contracts/EnergyToken.json';
 import MarketplaceABI from '../contracts/Marketplace.json';
+import addresses from '../contracts/addresses';
 
-const ENERGY_TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-const MARKETPLACE_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
+const ENERGY_TOKEN_ADDRESS = addresses.EnergyToken;
+const MARKETPLACE_ADDRESS = addresses.Marketplace;
 
 function MarketplacePanel({ signer, account }) {
   const [amount, setAmount] = useState('');
