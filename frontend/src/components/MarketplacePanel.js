@@ -1,6 +1,6 @@
 /* global BigInt */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import EnergyTokenABI from '../contracts/EnergyToken.json';
 import MarketplaceABI from '../contracts/Marketplace.json';
@@ -10,12 +10,24 @@ import addresses from '../contracts/addresses';
 const ENERGY_TOKEN_ADDRESS = addresses.EnergyToken;
 const MARKETPLACE_ADDRESS = addresses.Marketplace;
 
-function MarketplacePanel({ signer, account }) {
+function MarketplacePanel({ signer, account, provider }) {
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+
+  // Auto-refresh listings when blockchain events occur
+useEffect(() => {
+  if (!provider) return;
+  const marketplace = new ethers.Contract(
+    addresses.Marketplace, MarketplaceABI.abi, provider
+  );
+  marketplace.on('EnergyListed', fetchListings);
+  marketplace.on('EnergyPurchased', fetchListings);
+  marketplace.on('ListingCancelled', fetchListings);
+  return () => marketplace.removeAllListeners();
+}, [provider]);
 
   const getTokenContract = () => new ethers.Contract(
     ENERGY_TOKEN_ADDRESS, EnergyTokenABI.abi, signer

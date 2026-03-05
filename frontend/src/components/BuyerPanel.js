@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { ethers } from 'ethers';
 import EnergyTokenABI from '../contracts/EnergyToken.json';
 import MarketplaceABI from '../contracts/Marketplace.json';
@@ -8,7 +8,7 @@ import addresses from '../contracts/addresses';
 const ENERGY_TOKEN_ADDRESS = addresses.EnergyToken;
 const MARKETPLACE_ADDRESS = addresses.Marketplace;
 
-function BuyerPanel({ signer, account }) {
+function BuyerPanel({ signer, account, provider }) {
   const [listings, setListings] = useState([]);
   const [buyerBalance, setBuyerBalance] = useState(null);
   const [loading, setLoading] = useState(false);

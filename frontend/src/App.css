@@ -228,3 +228,41 @@ body {
   text-align: center;
   margin-top: 4px;
 }
+
+.tx-table-wrapper { overflow-x: auto; margin-top: 16px; }
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tx-table th {
+  background: #0f1117;
+  color: #f4c430;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid #2e3148;
+}
+
+.tx-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e2130;
+  color: #e0e0e0;
+}
+
+.tx-table tr:hover td { background: #1a1d27; }
+
+.tx-id { color: #666; }
+.tx-amount { color: #f4c430; font-weight: bold; }
+.tx-price { color: #4caf50; }
+.tx-address { font-family: monospace; color: #64b5f6; }
+.tx-time { color: #888; font-size: 0.8rem; }
+.tx-hash {
+  font-family: monospace;
+  color: #666;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.tx-hash:hover { color: #f4c430; }
+.tx-count { color: #888; margin-top: 12px; font-size: 0.9rem; }
