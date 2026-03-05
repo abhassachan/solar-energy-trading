@@ -1,5 +1,6 @@
 import { useWallet } from './hooks/useWallet';
 import ProducerPanel from './components/ProducerPanel';
+import MarketplacePanel from './components/MarketplacePanel';
 import './App.css';
 
 function App() {
@@ -11,7 +12,6 @@ function App() {
 
   return (
     <div className="App">
-      {/* Header */}
       <header className="app-header">
         <h1>⚡ Solar Energy Trading</h1>
         <div className="wallet-section">
@@ -30,14 +30,13 @@ function App() {
         </div>
       </header>
 
-      {/* Error Message */}
       {error && <div className="error-banner">⚠️ {error}</div>}
 
-      {/* Main Content */}
       <main className="app-main">
         {account ? (
           <div className="dashboard">
             <ProducerPanel signer={signer} account={account} />
+            <MarketplacePanel signer={signer} account={account} />
           </div>
         ) : (
           <div className="welcome">
