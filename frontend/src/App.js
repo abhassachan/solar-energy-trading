@@ -1,6 +1,7 @@
 import { useWallet } from './hooks/useWallet';
 import ProducerPanel from './components/ProducerPanel';
 import MarketplacePanel from './components/MarketplacePanel';
+import BuyerPanel from './components/BuyerPanel';
 import './App.css';
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
           <div className="dashboard">
             <ProducerPanel signer={signer} account={account} />
             <MarketplacePanel signer={signer} account={account} />
+            <BuyerPanel signer={signer} account={account} />
           </div>
         ) : (
           <div className="welcome">
