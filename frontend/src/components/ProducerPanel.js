@@ -3,8 +3,9 @@ import { ethers } from 'ethers';
 
 // We need the contract ABI and address
 import EnergyTokenABI from '../contracts/EnergyToken.json';
+import addresses from '../contracts/addresses';
 
-const ENERGY_TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const ENERGY_TOKEN_ADDRESS = addresses.EnergyToken;
 
 function ProducerPanel({ signer, account }) {
   const [amount, setAmount] = useState('');
