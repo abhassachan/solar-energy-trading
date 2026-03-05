@@ -1,89 +1,67 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { toast } from 'react-hot-toast';
 import EnergyTokenABI from '../contracts/EnergyToken.json';
 import MarketplaceABI from '../contracts/Marketplace.json';
 import addresses from '../contracts/addresses';
 
-
-const ENERGY_TOKEN_ADDRESS = addresses.EnergyToken;
-const MARKETPLACE_ADDRESS = addresses.Marketplace;
-
-function BuyerPanel({ signer, account, provider }) {
+function BuyerPanel({ signer, account, provider, onSuccess }) {
   const [listings, setListings] = useState([]);
-  const [buyerBalance, setBuyerBalance] = useState(null);
+  const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
-  const [message, setMessage] = useState(null);
 
-  const getTokenContract = () => new ethers.Contract(
-    ENERGY_TOKEN_ADDRESS, EnergyTokenABI.abi, signer
-  );
+  const getTokenContract = () => new ethers.Contract(addresses.EnergyToken, EnergyTokenABI.abi, signer);
+  const getMarketplaceContract = () => new ethers.Contract(addresses.Marketplace, MarketplaceABI.abi, signer);
 
-  const getMarketplaceContract = () => new ethers.Contract(
-    MARKETPLACE_ADDRESS, MarketplaceABI.abi, signer
-  );
-
-  // Fetch all active listings
   const fetchListings = async () => {
     try {
-      const marketplaceContract = getMarketplaceContract();
-      const activeListings = await marketplaceContract.getActiveListings();
-
-      const formatted = activeListings.map(listing => ({
-        id: listing.id.toString(),
-        seller: listing.seller,
-        amount: listing.amount.toString(),
-        pricePerUnit: ethers.formatEther(listing.pricePerUnit),
-        totalPrice: ethers.formatEther(
-          listing.amount * listing.pricePerUnit
-        ),
-        totalPriceWei: listing.amount * listing.pricePerUnit
-      }));
-
-      setListings(formatted);
-    } catch (err) {
-      console.error("Failed to fetch listings:", err);
-    }
+      const contract = getMarketplaceContract();
+      const active = await contract.getActiveListings();
+      setListings(active.map(l => ({
+        id: l.id.toString(),
+        seller: l.seller,
+        amount: l.amount.toString(),
+        pricePerUnit: ethers.formatEther(l.pricePerUnit),
+        totalPrice: ethers.formatEther(l.amount * l.pricePerUnit),
+        totalPriceWei: l.amount * l.pricePerUnit
+      })));
+    } catch (err) { console.error(err); }
   };
 
-  // Fetch buyer's token balance
-  const fetchBuyerBalance = async () => {
+  const fetchBalance = async () => {
     try {
-      const tokenContract = getTokenContract();
-      const bal = await tokenContract.getEnergyBalance(account);
-      setBuyerBalance(bal.toString());
-    } catch (err) {
-      console.error("Balance fetch error:", err);
-    }
+      const contract = getTokenContract();
+      const bal = await contract.getEnergyBalance(account);
+      setBalance(bal.toString());
+    } catch (err) { console.error(err); }
   };
 
-  // Buy energy from a listing
+  useEffect(() => {
+    if (!provider) return;
+    fetchListings();
+    fetchBalance();
+    const contract = new ethers.Contract(addresses.Marketplace, MarketplaceABI.abi, provider);
+    contract.on('EnergyListed', fetchListings);
+    contract.on('EnergyPurchased', () => { fetchListings(); fetchBalance(); });
+    contract.on('ListingCancelled', fetchListings);
+    return () => contract.removeAllListeners();
+  }, [provider]);
+
   const handleBuyEnergy = async (listing) => {
     try {
       setLoading(true);
       setLoadingId(listing.id);
-      setMessage({ type: 'info', text: `Purchasing ${listing.amount} kWh...` });
-
-      const marketplaceContract = getMarketplaceContract();
-
-      // Send ETH equal to total price
-      const tx = await marketplaceContract.buyEnergy(listing.id, {
-        value: listing.totalPriceWei
-      });
-
-      setMessage({ type: 'info', text: 'Confirming transaction...' });
+      const contract = getMarketplaceContract();
+      toast.loading(`Buying ${listing.amount} kWh...`, { id: 'buy' });
+      const tx = await contract.buyEnergy(listing.id, { value: listing.totalPriceWei });
       await tx.wait();
-
-      setMessage({
-        type: 'success',
-        text: `✅ Purchased ${listing.amount} kWh for ${listing.totalPrice} ETH!`
-      });
-
+      toast.success(`Purchased ${listing.amount} kWh for ${listing.totalPrice} ETH!`, { id: 'buy' });
       fetchListings();
-      fetchBuyerBalance();
-
+      fetchBalance();
+      if (onSuccess) onSuccess();
     } catch (err) {
-      setMessage({ type: 'error', text: `❌ Error: ${err.message}` });
+      toast.error(err.reason || err.message.slice(0, 60), { id: 'buy' });
     } finally {
       setLoading(false);
       setLoadingId(null);
@@ -92,72 +70,62 @@ function BuyerPanel({ signer, account, provider }) {
 
   return (
     <div className="panel">
-      <h2>🛒 Buy Energy</h2>
-      <p className="panel-subtitle">Purchase solar energy tokens from producers</p>
-
-      {/* Buyer Balance */}
-      <div className="balance-card">
-        <span>Your Energy Token Balance</span>
-        <div className="balance-value">
-          {buyerBalance !== null ? `${buyerBalance} kWh` : '---'}
+      <div className="panel-header">
+        <div>
+          <div className="panel-title">
+            <div className="panel-icon icon-orange">🛒</div>
+            Buy Energy
+          </div>
+          <div className="panel-subtitle">Purchase solar energy tokens from producers</div>
         </div>
-        <button className="btn-secondary" onClick={fetchBuyerBalance}>
-          🔄 Refresh Balance
-        </button>
+        <button className="btn-secondary" onClick={() => { fetchListings(); fetchBalance(); }}>↻ Refresh</button>
       </div>
 
-      {/* Available Listings */}
-      <div className="listings-section">
-        <div className="listings-header">
-          <h3>Available Energy for Purchase</h3>
-          <button className="btn-secondary" onClick={fetchListings}>
-            🔄 Refresh Listings
-          </button>
+      {/* Balance */}
+      <div className="balance-card" data-icon="🛒">
+        <div className="balance-label">Your Energy Token Balance</div>
+        <div className="balance-value" style={{color: 'var(--accent2)'}}>
+          {balance !== null ? `${balance} kWh` : '---'}
         </div>
+        <div className="balance-sub">Tokens you've purchased</div>
+      </div>
 
-        {listings.length === 0 ? (
-          <div className="no-listings">
-            <p>No listings available. Click Refresh to load.</p>
-          </div>
-        ) : (
-          <div className="listings-grid">
-            {listings.map(listing => (
-              <div key={listing.id} className="listing-card buyer-card">
-                <div className="listing-top">
-                  <span className="listing-id">#{listing.id}</span>
-                  <span className="listing-amount">{listing.amount} kWh</span>
-                </div>
-                <div className="listing-price">
-                  {listing.pricePerUnit} ETH/kWh
-                </div>
-                <div className="listing-total">
-                  Total: {listing.totalPrice} ETH
-                </div>
-                <div className="listing-seller">
-                  Seller: {listing.seller.slice(0, 6)}...{listing.seller.slice(-4)}
-                </div>
+      {/* Listings */}
+      <div className="section-title">
+        Available Energy
+        <span style={{color: 'var(--accent)', fontFamily: 'Space Mono'}}>
+          {listings.length} available
+        </span>
+      </div>
 
-                {listing.seller.toLowerCase() === account.toLowerCase() ? (
-                  <div className="own-listing-badge">Your Listing</div>
-                ) : (
-                  <button
-                    className="btn-buy"
-                    onClick={() => handleBuyEnergy(listing)}
-                    disabled={loading}
-                  >
-                    {loadingId === listing.id ? '⏳ Buying...' : '⚡ Buy Now'}
-                  </button>
-                )}
+      {listings.length === 0 ? (
+        <p className="no-listings">No energy available. Check back soon!</p>
+      ) : (
+        <div className="listings-grid">
+          {listings.map(listing => (
+            <div key={listing.id} className="listing-card">
+              <div className="listing-top">
+                <span className="listing-id">#{listing.id}</span>
+                <span className="listing-amount">{listing.amount} kWh</span>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Status Message */}
-      {message && (
-        <div className={`message message-${message.type}`}>
-          {message.text}
+              <div className="listing-price">{listing.pricePerUnit} ETH/kWh</div>
+              <div className="listing-total">Total: {listing.totalPrice} ETH</div>
+              <div className="listing-seller">
+                Seller: {listing.seller.slice(0,6)}...{listing.seller.slice(-4)}
+              </div>
+              {listing.seller.toLowerCase() === account.toLowerCase() ? (
+                <div className="own-listing-badge">Your Listing</div>
+              ) : (
+                <button
+                  className="btn-buy"
+                  onClick={() => handleBuyEnergy(listing)}
+                  disabled={loading}
+                >
+                  {loadingId === listing.id ? '⏳ Buying...' : '⚡ Buy Now'}
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

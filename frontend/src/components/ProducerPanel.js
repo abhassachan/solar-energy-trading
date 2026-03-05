@@ -1,85 +1,74 @@
 import { useState } from 'react';
 import { ethers } from 'ethers';
-
-// We need the contract ABI and address
+import { toast } from 'react-hot-toast';
 import EnergyTokenABI from '../contracts/EnergyToken.json';
 import addresses from '../contracts/addresses';
 
-const ENERGY_TOKEN_ADDRESS = addresses.EnergyToken;
-
-function ProducerPanel({ signer, account }) {
+function ProducerPanel({ signer, account, onSuccess }) {
   const [amount, setAmount] = useState('');
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
 
-  // Get contract instance
-  const getContract = () => {
-    return new ethers.Contract(
-      ENERGY_TOKEN_ADDRESS,
-      EnergyTokenABI.abi,
-      signer
-    );
-  };
+  const getContract = () => new ethers.Contract(
+    addresses.EnergyToken, EnergyTokenABI.abi, signer
+  );
 
-  // Generate energy tokens
   const handleGenerateEnergy = async () => {
     if (!amount || amount <= 0) {
-      setMessage({ type: 'error', text: 'Please enter a valid amount' });
+      toast.error('Please enter a valid amount');
       return;
     }
-
     try {
       setLoading(true);
-      setMessage({ type: 'info', text: 'Confirming transaction...' });
-
+      toast.loading('Confirm in MetaMask...', { id: 'mint' });
       const contract = getContract();
       const tx = await contract.generateEnergy(amount);
-
-      setMessage({ type: 'info', text: 'Mining transaction...' });
-      await tx.wait(); // Wait for blockchain confirmation
-
-      setMessage({ type: 'success', text: `✅ Successfully minted ${amount} kWh tokens!` });
+      toast.loading('Mining transaction...', { id: 'mint' });
+      await tx.wait();
+      toast.success(`Minted ${amount} kWh tokens!`, { id: 'mint' });
       setAmount('');
-      fetchBalance(); // Refresh balance
-
+      fetchBalance();
+      if (onSuccess) onSuccess();
     } catch (err) {
-      setMessage({ type: 'error', text: `❌ Error: ${err.message}` });
+      toast.error(err.reason || err.message.slice(0, 60), { id: 'mint' });
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch current token balance
   const fetchBalance = async () => {
     try {
       const contract = getContract();
       const bal = await contract.getEnergyBalance(account);
       setBalance(bal.toString());
     } catch (err) {
-      console.error("Balance fetch error:", err);
+      console.error(err);
     }
   };
 
   return (
     <div className="panel">
-      <h2>⚡ Producer Dashboard</h2>
-      <p className="panel-subtitle">Generate tokens for your surplus solar energy</p>
-
-      {/* Balance Display */}
-      <div className="balance-card">
-        <span>Your Energy Balance</span>
-        <div className="balance-value">
-          {balance !== null ? `${balance} kWh` : '---'}
+      <div className="panel-header">
+        <div>
+          <div className="panel-title">
+            <div className="panel-icon icon-green">⚡</div>
+            Producer Dashboard
+          </div>
+          <div className="panel-subtitle">Mint tokens for your surplus solar energy</div>
         </div>
-        <button className="btn-secondary" onClick={fetchBalance}>
-          🔄 Refresh Balance
-        </button>
+        <button className="btn-secondary" onClick={fetchBalance}>↻ Refresh</button>
       </div>
 
-      {/* Generate Energy Form */}
+      {/* Balance Card */}
+      <div className="balance-card" data-icon="⚡">
+        <div className="balance-label">Your Energy Balance</div>
+        <div className="balance-value">{balance !== null ? `${balance} kWh` : '---'}</div>
+        <div className="balance-sub">EnergyToken (ENRG) • 1 token = 1 kWh</div>
+      </div>
+
+      {/* Form */}
       <div className="form-group">
-        <label>Amount of surplus energy (kWh)</label>
+        <label className="input-label">Surplus Energy to Mint (kWh)</label>
         <input
           type="number"
           placeholder="e.g. 10"
@@ -88,23 +77,17 @@ function ProducerPanel({ signer, account }) {
           min="1"
           className="input-field"
         />
-        <button
-          className="btn-primary"
-          onClick={handleGenerateEnergy}
-          disabled={loading}
-        >
-          {loading ? '⏳ Processing...' : '⚡ Generate Energy Tokens'}
-        </button>
       </div>
 
-      {/* Status Message */}
-      {message && (
-        <div className={`message message-${message.type}`}>
-          {message.text}
-        </div>
-      )}
+      <button
+        className="btn-primary"
+        onClick={handleGenerateEnergy}
+        disabled={loading}
+      >
+        {loading ? '⏳ Processing...' : '⚡ Generate Energy Tokens'}
+      </button>
     </div>
   );
 }
 
-export default ProducerPanel; 
+export default ProducerPanel;

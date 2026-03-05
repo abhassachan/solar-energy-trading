@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ethers } from 'ethers';
+import { toast } from 'react-hot-toast';
 import MarketplaceABI from '../contracts/Marketplace.json';
 import addresses from '../contracts/addresses';
 
@@ -9,22 +10,13 @@ function TransactionHistory({ provider }) {
 
   const fetchHistory = useCallback(async () => {
     if (!provider) return;
-
     try {
       setLoading(true);
-
-      const marketplace = new ethers.Contract(
-        addresses.Marketplace,
-        MarketplaceABI.abi,
-        provider
-      );
-
-      // Query all EnergyPurchased events from block 0 to now
+      toast.loading('Fetching blockchain history...', { id: 'history' });
+      const marketplace = new ethers.Contract(addresses.Marketplace, MarketplaceABI.abi, provider);
       const filter = marketplace.filters.EnergyPurchased();
       const events = await marketplace.queryFilter(filter, 0, 'latest');
-
       const formatted = await Promise.all(events.map(async (event) => {
-        // Get block timestamp
         const block = await provider.getBlock(event.blockNumber);
         return {
           txHash: event.transactionHash,
@@ -37,73 +29,82 @@ function TransactionHistory({ provider }) {
           blockNumber: event.blockNumber
         };
       }));
-
-      // Most recent first
       setTransactions(formatted.reverse());
-
+      toast.success(`Loaded ${formatted.length} transactions`, { id: 'history' });
     } catch (err) {
-      console.error('Failed to fetch history:', err);
+      toast.error('Failed to fetch history', { id: 'history' });
+      console.error(err);
     } finally {
       setLoading(false);
     }
   }, [provider]);
 
-  const shortAddress = (addr) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const short = (addr) => `${addr.slice(0,6)}...${addr.slice(-4)}`;
 
   return (
     <div className="panel">
-      <div className="listings-header">
-        <h2>📜 Transaction History</h2>
-        <button
-          className="btn-secondary"
-          onClick={fetchHistory}
-          disabled={loading}
-        >
-          {loading ? '⏳ Loading...' : '🔄 Load History'}
+      <div className="panel-header">
+        <div>
+          <div className="panel-title">
+            <div className="panel-icon icon-yellow">📜</div>
+            Transaction History
+          </div>
+          <div className="panel-subtitle">All completed P2P energy trades — immutably recorded on blockchain</div>
+        </div>
+        <button className="btn-secondary" onClick={fetchHistory} disabled={loading}>
+          {loading ? '⏳ Loading...' : '↻ Load History'}
         </button>
       </div>
-      <p className="panel-subtitle">All completed energy trades on the blockchain</p>
 
       {transactions.length === 0 ? (
         <p className="no-listings">
-          {loading ? 'Fetching from blockchain...' : 'Click "Load History" to fetch transactions'}
+          Click "Load History" to fetch all transactions from the blockchain
         </p>
       ) : (
-        <div className="tx-table-wrapper">
-          <table className="tx-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Amount</th>
-                <th>Price</th>
-                <th>Buyer</th>
-                <th>Seller</th>
-                <th>Time</th>
-                <th>Tx</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx, i) => (
-                <tr key={tx.txHash}>
-                  <td className="tx-id">#{tx.listingId}</td>
-                  <td className="tx-amount">{tx.amount} kWh</td>
-                  <td className="tx-price">{tx.totalPrice} ETH</td>
-                  <td className="tx-address">{shortAddress(tx.buyer)}</td>
-                  <td className="tx-address">{shortAddress(tx.seller)}</td>
-                  <td className="tx-time">{tx.timestamp}</td>
-                  <td>
-                    <span className="tx-hash" title={tx.txHash}>
-                      {tx.txHash.slice(0, 8)}...
-                    </span>
-                  </td>
+        <>
+          <div className="tx-table-wrapper">
+            <table className="tx-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Amount</th>
+                  <th>Price</th>
+                  <th>Buyer</th>
+                  <th>Seller</th>
+                  <th>Status</th>
+                  <th>Time</th>
+                  <th>Tx Hash</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {transactions.map((tx) => (
+                  <tr key={tx.txHash}>
+                    <td className="tx-id">#{tx.listingId}</td>
+                    <td className="tx-amount">{tx.amount} kWh</td>
+                    <td className="tx-price">{tx.totalPrice} ETH</td>
+                    <td className="tx-address">{short(tx.buyer)}</td>
+                    <td className="tx-address">{short(tx.seller)}</td>
+                    <td>
+                      <span className="status-badge">
+                        <div className="dot" />
+                        Confirmed
+                      </span>
+                    </td>
+                    <td className="tx-time">{tx.timestamp}</td>
+                    <td>
+                      <span className="tx-hash" title={tx.txHash}>
+                        {tx.txHash.slice(0,10)}...
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <p className="tx-count">
-            Total trades: <strong>{transactions.length}</strong>
+            Total trades: <strong style={{color:'var(--accent)'}}>{transactions.length}</strong>
           </p>
-        </div>
+        </>
       )}
     </div>
   );
