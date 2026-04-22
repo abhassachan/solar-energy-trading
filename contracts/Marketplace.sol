@@ -3,12 +3,23 @@ pragma solidity ^0.8.20;
 
 import "./EnergyToken.sol";
 
+interface IEnergyCertificate {
+    function mintCertificate(address consumer, address producer, uint256 amount) external returns (uint256);
+}
+
 /**
  * @title Marketplace
  * @dev Handles peer-to-peer energy trading
  * Producers list tokens, consumers buy them with ETH
  */
 contract Marketplace {
+
+    IEnergyCertificate public energyCertificate;
+
+    function setCertificateContract(address _cert) external {
+        require(msg.sender == owner, "Only owner");
+        energyCertificate = IEnergyCertificate(_cert);
+    }
 
     EnergyToken public energyToken;
     address public owner;
@@ -100,6 +111,11 @@ contract Marketplace {
         // Refund any excess ETH sent
         if (msg.value > totalPrice) {
             payable(msg.sender).transfer(msg.value - totalPrice);
+        }
+
+        // Mint NFT Certificate
+        if (address(energyCertificate) != address(0)) {
+            energyCertificate.mintCertificate(msg.sender, listing.seller, amountToBuy);
         }
 
         emit EnergyPurchased(listingId, msg.sender, listing.seller, amountToBuy, totalPrice);

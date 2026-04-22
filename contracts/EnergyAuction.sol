@@ -3,6 +3,10 @@ pragma solidity ^0.8.20;
 
 import "./EnergyToken.sol";
 
+interface IEnergyCertificate {
+    function mintCertificate(address consumer, address producer, uint256 amount) external returns (uint256);
+}
+
 /**
  * @title EnergyAuction
  * @dev English auction system for energy tokens
@@ -10,6 +14,13 @@ import "./EnergyToken.sol";
  * Highest bidder wins when timer expires
  */
 contract EnergyAuction {
+
+    IEnergyCertificate public energyCertificate;
+
+    function setCertificateContract(address _cert) external {
+        require(msg.sender == owner, "Only owner");
+        energyCertificate = IEnergyCertificate(_cert);
+    }
 
     EnergyToken public energyToken;
     address public owner;
@@ -132,6 +143,11 @@ contract EnergyAuction {
             // There was a winner — transfer tokens to winner, ETH to seller
             energyToken.transfer(auction.highestBidder, tokenAmount);
             payable(auction.seller).transfer(auction.highestBid);
+
+            // Mint NFT Certificate
+            if (address(energyCertificate) != address(0)) {
+                energyCertificate.mintCertificate(auction.highestBidder, auction.seller, auction.tokenAmount);
+            }
 
             emit AuctionEnded(auctionId, auction.highestBidder, auction.tokenAmount, auction.highestBid);
         } else {

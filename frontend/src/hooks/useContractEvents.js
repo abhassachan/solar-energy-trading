@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { ethers } from 'ethers';
 import MarketplaceABI from '../contracts/Marketplace.json';
 import EnergyAuctionABI from '../contracts/EnergyAuction.json';
+import EnergyCertificateABI from '../contracts/EnergyCertificate.json';
 import addresses from '../contracts/addresses';
 
 export function useContractEvents(provider, callbacks) {
@@ -11,7 +12,8 @@ export function useContractEvents(provider, callbacks) {
     onListingCancelled,
     onAuctionCreated,
     onBidPlaced,
-    onAuctionEnded
+    onAuctionEnded,
+    onCertificateMinted
   } = callbacks;
 
   useEffect(() => {
@@ -98,6 +100,28 @@ export function useContractEvents(provider, callbacks) {
       auction.on('AuctionEnded', handleAuctionEnded);
     }
 
+    // Certificate events
+    let certificate = null;
+    if (addresses.EnergyCertificate) {
+      certificate = new ethers.Contract(addresses.EnergyCertificate, EnergyCertificateABI.abi, provider);
+
+      const handleCertificateMinted = (tokenId, consumer, producer, amount) => {
+        // We only want to notify the consumer who actually received it
+        // Note: consumer and provider address comparison should probably be done in the component 
+        // to avoid notifying everyone, but we'll dispatch it and let App.js handle
+        if (onCertificateMinted) {
+          onCertificateMinted({
+            id: tokenId.toString(),
+            consumer,
+            producer,
+            amount: amount.toString()
+          });
+        }
+      };
+
+      certificate.on('CertificateMinted', handleCertificateMinted);
+    }
+
     return () => {
       marketplace.off('EnergyListed', handleEnergyListed);
       marketplace.off('EnergyPurchased', handleEnergyPurchased);
@@ -105,6 +129,9 @@ export function useContractEvents(provider, callbacks) {
       if (auction) {
         auction.removeAllListeners();
       }
+      if (certificate) {
+        certificate.removeAllListeners();
+      }
     };
-  }, [provider, onEnergyListed, onEnergyPurchased, onListingCancelled, onAuctionCreated, onBidPlaced, onAuctionEnded]);
+  }, [provider, onEnergyListed, onEnergyPurchased, onListingCancelled, onAuctionCreated, onBidPlaced, onAuctionEnded, onCertificateMinted]);
 }

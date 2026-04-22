@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { BaseContract, BigNumberish, BytesLike, FunctionFragment, Result, Interface, EventFragment, AddressLike, ContractRunner, ContractMethod, Listener } from "ethers"
-import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, TypedLogDescription, TypedListener, TypedContractMethod } from "./common.js"
+import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, TypedLogDescription, TypedListener, TypedContractMethod } from "../common.js"
   
 export declare namespace Marketplace {
       
@@ -13,27 +13,31 @@ export declare namespace Marketplace {
     }
 
   export interface MarketplaceInterface extends Interface {
-    getFunction(nameOrSignature: "buyEnergy" | "cancelListing" | "energyToken" | "getActiveListings" | "listEnergy" | "listingCount" | "listings" | "owner"): FunctionFragment;
+    getFunction(nameOrSignature: "buyEnergy" | "cancelListing" | "energyCertificate" | "energyToken" | "getActiveListings" | "listEnergy" | "listingCount" | "listings" | "owner" | "setCertificateContract"): FunctionFragment;
 
     getEvent(nameOrSignatureOrTopic: "EnergyListed" | "EnergyPurchased" | "ListingCancelled"): EventFragment;
 
     encodeFunctionData(functionFragment: 'buyEnergy', values: [BigNumberish, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'cancelListing', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'energyCertificate', values?: undefined): string;
 encodeFunctionData(functionFragment: 'energyToken', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getActiveListings', values?: undefined): string;
 encodeFunctionData(functionFragment: 'listEnergy', values: [BigNumberish, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'listingCount', values?: undefined): string;
 encodeFunctionData(functionFragment: 'listings', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
+encodeFunctionData(functionFragment: 'setCertificateContract', values: [AddressLike]): string;
 
     decodeFunctionResult(functionFragment: 'buyEnergy', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'cancelListing', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'energyCertificate', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'energyToken', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getActiveListings', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'listEnergy', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'listingCount', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'listings', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'setCertificateContract', data: BytesLike): Result;
   }
 
   
@@ -123,6 +127,14 @@ decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
     
 
     
+    energyCertificate: TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >
+    
+
+    
     energyToken: TypedContractMethod<
       [],
       [string],
@@ -170,6 +182,14 @@ decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
     >
     
 
+    
+    setCertificateContract: TypedContractMethod<
+      [_cert: AddressLike, ],
+      [void],
+      'nonpayable'
+    >
+    
+
 
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
 
@@ -182,6 +202,11 @@ getFunction(nameOrSignature: 'cancelListing'): TypedContractMethod<
       [listingId: BigNumberish, ],
       [void],
       'nonpayable'
+    >;
+getFunction(nameOrSignature: 'energyCertificate'): TypedContractMethod<
+      [],
+      [string],
+      'view'
     >;
 getFunction(nameOrSignature: 'energyToken'): TypedContractMethod<
       [],
@@ -212,6 +237,11 @@ getFunction(nameOrSignature: 'owner'): TypedContractMethod<
       [],
       [string],
       'view'
+    >;
+getFunction(nameOrSignature: 'setCertificateContract'): TypedContractMethod<
+      [_cert: AddressLike, ],
+      [void],
+      'nonpayable'
     >;
 
     getEvent(key: 'EnergyListed'): TypedContractEvent<EnergyListedEvent.InputTuple, EnergyListedEvent.OutputTuple, EnergyListedEvent.OutputObject>;

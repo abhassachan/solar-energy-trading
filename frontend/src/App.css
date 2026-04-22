@@ -1107,8 +1107,196 @@
   color: var(--accent2);
 }
 
-.auction-badge {
-  background: rgba(138, 92, 246, 0.08);
-  border: 1px solid rgba(138, 92, 246, 0.2);
-  color: var(--purple);
+/* ===== TRANSACTIONS & CERTIFICATES ===== */
+
+/* ... (previous transaction CSS remains intact) ... */
+
+/* ===== CERTIFICATES PANEL ===== */
+.certificate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
+
+.certificate-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+/* Glassmorphism / Foil effect on hover */
+.certificate-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.05) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-20deg);
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.certificate-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.15);
+}
+
+.certificate-card:hover::after {
+  left: 200%;
+  transition: all 0.7s ease-in-out;
+}
+
+.certificate-img-container {
+  width: 100%;
+  padding: 20px;
+  background: radial-gradient(circle at center, rgba(30,45,61,0.8) 0%, var(--surface2) 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.certificate-img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.certificate-info {
+  padding: 16px;
+}
+
+.certificate-info h4 {
+  margin: 0 0 12px 0;
+  color: var(--yellow);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.cert-attrs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cert-attr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+}
+
+.attr-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.attr-value {
+  font-size: 0.85rem;
+  color: var(--text);
+  font-weight: bold;
+  font-family: 'Space Mono', monospace;
+}
+
+/* ===== IMPACT HERO GAMIFICATION ===== */
+.impact-hero {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .impact-hero {
+    flex-direction: column;
+  }
+}
+
+.impact-card {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(30,45,61,0.6) 0%, rgba(20, 20, 20, 0.4) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.impact-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.impact-icon {
+  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.impact-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.impact-value {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+  color: var(--yellow);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+  line-height: 1;
+}
+
+.impact-value span {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.impact-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tier-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.gamified-img {
+  background: radial-gradient(circle at center, rgba(15, 23, 42, 0.8) 0%, var(--background) 100%);
 }

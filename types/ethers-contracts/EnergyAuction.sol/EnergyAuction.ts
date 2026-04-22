@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { BaseContract, BigNumberish, BytesLike, FunctionFragment, Result, Interface, EventFragment, AddressLike, ContractRunner, ContractMethod, Listener } from "ethers"
-import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, TypedLogDescription, TypedListener, TypedContractMethod } from "./common.js"
+import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, TypedLogDescription, TypedListener, TypedContractMethod } from "../common.js"
   
 export declare namespace EnergyAuction {
       
@@ -13,7 +13,7 @@ export declare namespace EnergyAuction {
     }
 
   export interface EnergyAuctionInterface extends Interface {
-    getFunction(nameOrSignature: "auctionCount" | "auctions" | "cancelAuction" | "createAuction" | "endAuction" | "energyToken" | "getActiveAuctions" | "getAuction" | "owner" | "placeBid"): FunctionFragment;
+    getFunction(nameOrSignature: "auctionCount" | "auctions" | "cancelAuction" | "createAuction" | "endAuction" | "energyCertificate" | "energyToken" | "getActiveAuctions" | "getAuction" | "owner" | "placeBid" | "setCertificateContract"): FunctionFragment;
 
     getEvent(nameOrSignatureOrTopic: "AuctionCancelled" | "AuctionCreated" | "AuctionEnded" | "BidPlaced"): EventFragment;
 
@@ -22,22 +22,26 @@ encodeFunctionData(functionFragment: 'auctions', values: [BigNumberish]): string
 encodeFunctionData(functionFragment: 'cancelAuction', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'createAuction', values: [BigNumberish, BigNumberish, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'endAuction', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'energyCertificate', values?: undefined): string;
 encodeFunctionData(functionFragment: 'energyToken', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getActiveAuctions', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getAuction', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
 encodeFunctionData(functionFragment: 'placeBid', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'setCertificateContract', values: [AddressLike]): string;
 
     decodeFunctionResult(functionFragment: 'auctionCount', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'auctions', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'cancelAuction', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'createAuction', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'endAuction', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'energyCertificate', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'energyToken', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getActiveAuctions', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getAuction', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'placeBid', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'setCertificateContract', data: BytesLike): Result;
   }
 
   
@@ -163,6 +167,14 @@ decodeFunctionResult(functionFragment: 'placeBid', data: BytesLike): Result;
     
 
     
+    energyCertificate: TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >
+    
+
+    
     energyToken: TypedContractMethod<
       [],
       [string],
@@ -202,6 +214,14 @@ decodeFunctionResult(functionFragment: 'placeBid', data: BytesLike): Result;
     >
     
 
+    
+    setCertificateContract: TypedContractMethod<
+      [_cert: AddressLike, ],
+      [void],
+      'nonpayable'
+    >
+    
+
 
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
 
@@ -230,6 +250,11 @@ getFunction(nameOrSignature: 'endAuction'): TypedContractMethod<
       [void],
       'nonpayable'
     >;
+getFunction(nameOrSignature: 'energyCertificate'): TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >;
 getFunction(nameOrSignature: 'energyToken'): TypedContractMethod<
       [],
       [string],
@@ -254,6 +279,11 @@ getFunction(nameOrSignature: 'placeBid'): TypedContractMethod<
       [auctionId: BigNumberish, ],
       [void],
       'payable'
+    >;
+getFunction(nameOrSignature: 'setCertificateContract'): TypedContractMethod<
+      [_cert: AddressLike, ],
+      [void],
+      'nonpayable'
     >;
 
     getEvent(key: 'AuctionCancelled'): TypedContractEvent<AuctionCancelledEvent.InputTuple, AuctionCancelledEvent.OutputTuple, AuctionCancelledEvent.OutputObject>;

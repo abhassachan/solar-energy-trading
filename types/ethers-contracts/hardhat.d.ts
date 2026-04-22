@@ -11,19 +11,31 @@ import * as Contracts from "./index.js";
 declare module "@nomicfoundation/hardhat-ethers/types" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
   getContractFactory(name: 'EnergyAuction', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.EnergyAuction__factory>
+getContractFactory(name: 'IEnergyCertificate', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IEnergyCertificate__factory>
+getContractFactory(name: 'EnergyCertificate', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.EnergyCertificate__factory>
 getContractFactory(name: 'EnergyToken', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.EnergyToken__factory>
+getContractFactory(name: 'IEnergyCertificate', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IEnergyCertificate__factory>
 getContractFactory(name: 'Marketplace', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Marketplace__factory>
 
   getContractAt(name: 'EnergyAuction', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.EnergyAuction>
+getContractAt(name: 'IEnergyCertificate', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IEnergyCertificate>
+getContractAt(name: 'EnergyCertificate', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.EnergyCertificate>
 getContractAt(name: 'EnergyToken', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.EnergyToken>
+getContractAt(name: 'IEnergyCertificate', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IEnergyCertificate>
 getContractAt(name: 'Marketplace', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Marketplace>
 
   deployContract(name: 'EnergyAuction', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyAuction>
+deployContract(name: 'IEnergyCertificate', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IEnergyCertificate>
+deployContract(name: 'EnergyCertificate', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyCertificate>
 deployContract(name: 'EnergyToken', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyToken>
+deployContract(name: 'IEnergyCertificate', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IEnergyCertificate>
 deployContract(name: 'Marketplace', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Marketplace>
 
   deployContract(name: 'EnergyAuction', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyAuction>
+deployContract(name: 'IEnergyCertificate', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IEnergyCertificate>
+deployContract(name: 'EnergyCertificate', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyCertificate>
 deployContract(name: 'EnergyToken', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyToken>
+deployContract(name: 'IEnergyCertificate', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IEnergyCertificate>
 deployContract(name: 'Marketplace', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Marketplace>
 
     // default types

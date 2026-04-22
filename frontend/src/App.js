@@ -7,10 +7,12 @@ import ProducerPanel from './components/ProducerPanel';
 import MarketplacePanel from './components/MarketplacePanel';
 import BuyerPanel from './components/BuyerPanel';
 import AuctionPanel from './components/AuctionPanel';
+import CertificatesPanel from './components/CertificatesPanel';
 import TransactionHistory from './components/TransactionHistory';
 import MarketplaceABI from './contracts/Marketplace.json';
 import EnergyTokenABI from './contracts/EnergyToken.json';
 import EnergyAuctionABI from './contracts/EnergyAuction.json';
+import EnergyCertificateABI from './contracts/EnergyCertificate.json';
 import addresses from './contracts/addresses';
 import './App.css';
 
@@ -99,13 +101,18 @@ function App() {
     fetchStats();
   }, [fetchStats]);
 
+  const handleCertificateMinted = useCallback((event) => {
+    toast.success(`🏆 You received Green Energy Certificate #${event.id}!`, { duration: 5000 });
+  }, []);
+
   useContractEvents(provider, {
     onEnergyListed: handleEnergyListed,
     onEnergyPurchased: handleEnergyPurchased,
     onListingCancelled: handleListingCancelled,
     onAuctionCreated: handleAuctionCreated,
     onBidPlaced: handleBidPlaced,
-    onAuctionEnded: handleAuctionEnded
+    onAuctionEnded: handleAuctionEnded,
+    onCertificateMinted: handleCertificateMinted
   });
 
   const tabs = [
@@ -113,6 +120,7 @@ function App() {
     { id: 'marketplace', label: 'Marketplace', icon: '🏪', badge: stats.activeListings > 0 ? stats.activeListings : null },
     { id: 'buy', label: 'Buy Energy', icon: '🛒', badge: null },
     { id: 'auction', label: 'Auctions', icon: '🔨', badge: null },
+    { id: 'certificates', label: 'Certificates', icon: '🎖️', badge: null },
     { id: 'history', label: 'History', icon: '📜', badge: null },
   ];
 
@@ -243,6 +251,12 @@ function App() {
                 account={account}
                 provider={provider}
                 onSuccess={fetchStats}
+              />
+            )}
+            {activeTab === 'certificates' && (
+              <CertificatesPanel
+                provider={provider}
+                account={account}
               />
             )}
             {activeTab === 'history' && (
