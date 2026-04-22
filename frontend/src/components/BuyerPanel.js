@@ -10,6 +10,7 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
+  const [buyAmounts, setBuyAmounts] = useState({});
 
   const getTokenContract = () => new ethers.Contract(addresses.EnergyToken, EnergyTokenABI.abi, signer);
   const getMarketplaceContract = () => new ethers.Contract(addresses.Marketplace, MarketplaceABI.abi, signer);
@@ -21,8 +22,9 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
       setListings(active.map(l => ({
         id: l.id.toString(),
         seller: l.seller,
-        amount: l.amount.toString(),
+        amount: Number(l.amount.toString()),
         pricePerUnit: ethers.formatEther(l.pricePerUnit),
+        pricePerUnitWei: l.pricePerUnit,
         totalPrice: ethers.formatEther(l.amount * l.pricePerUnit),
         totalPriceWei: l.amount * l.pricePerUnit
       })));
@@ -48,15 +50,36 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
     return () => contract.removeAllListeners();
   }, [provider]);
 
+  const getBuyAmount = (listing) => {
+    const val = buyAmounts[listing.id];
+    if (val === undefined || val === '') return listing.amount;
+    return Number(val);
+  };
+
+  const getCalculatedPrice = (listing) => {
+    const amt = getBuyAmount(listing);
+    if (amt <= 0 || amt > listing.amount) return '—';
+    const priceWei = ethers.toBigInt(amt) * listing.pricePerUnitWei;
+    return ethers.formatEther(priceWei);
+  };
+
   const handleBuyEnergy = async (listing) => {
+    const amountToBuy = getBuyAmount(listing);
+    if (amountToBuy <= 0 || amountToBuy > listing.amount) {
+      toast.error(`Enter a valid amount (1-${listing.amount} kWh)`);
+      return;
+    }
     try {
       setLoading(true);
       setLoadingId(listing.id);
       const contract = getMarketplaceContract();
-      toast.loading(`Buying ${listing.amount} kWh...`, { id: 'buy' });
-      const tx = await contract.buyEnergy(listing.id, { value: listing.totalPriceWei });
+      const costWei = ethers.toBigInt(amountToBuy) * listing.pricePerUnitWei;
+      toast.loading(`Buying ${amountToBuy} kWh...`, { id: 'buy' });
+      const tx = await contract.buyEnergy(listing.id, amountToBuy, { value: costWei });
       await tx.wait();
-      toast.success(`Purchased ${listing.amount} kWh for ${listing.totalPrice} ETH!`, { id: 'buy' });
+      const costEth = ethers.formatEther(costWei);
+      toast.success(`Purchased ${amountToBuy} kWh for ${costEth} ETH!`, { id: 'buy' });
+      setBuyAmounts(prev => ({ ...prev, [listing.id]: '' }));
       fetchListings();
       fetchBalance();
       if (onSuccess) onSuccess();
@@ -76,7 +99,7 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
             <div className="panel-icon icon-orange">🛒</div>
             Buy Energy
           </div>
-          <div className="panel-subtitle">Purchase solar energy tokens from producers</div>
+          <div className="panel-subtitle">Purchase solar energy tokens — buy full or partial amounts</div>
         </div>
         <button className="btn-secondary" onClick={() => { fetchListings(); fetchBalance(); }}>↻ Refresh</button>
       </div>
@@ -102,30 +125,53 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
         <p className="no-listings">No energy available. Check back soon!</p>
       ) : (
         <div className="listings-grid">
-          {listings.map(listing => (
-            <div key={listing.id} className="listing-card">
-              <div className="listing-top">
-                <span className="listing-id">#{listing.id}</span>
-                <span className="listing-amount">{listing.amount} kWh</span>
+          {listings.map(listing => {
+            const buyAmt = getBuyAmount(listing);
+            const isPartial = buyAmounts[listing.id] !== undefined && buyAmounts[listing.id] !== '' && Number(buyAmounts[listing.id]) < listing.amount;
+            
+            return (
+              <div key={listing.id} className="listing-card">
+                <div className="listing-top">
+                  <span className="listing-id">#{listing.id}</span>
+                  <span className="listing-amount">{listing.amount} kWh</span>
+                </div>
+                <div className="listing-price">{listing.pricePerUnit} ETH/kWh</div>
+                <div className="listing-seller">
+                  Seller: {listing.seller.slice(0,6)}...{listing.seller.slice(-4)}
+                </div>
+                {listing.seller.toLowerCase() === account.toLowerCase() ? (
+                  <div className="own-listing-badge">Your Listing</div>
+                ) : (
+                  <>
+                    {/* Partial purchase input */}
+                    <div className="partial-buy-section">
+                      <label className="input-label">Amount to Buy (kWh)</label>
+                      <input
+                        type="number"
+                        placeholder={`Max ${listing.amount}`}
+                        value={buyAmounts[listing.id] || ''}
+                        onChange={(e) => setBuyAmounts(prev => ({...prev, [listing.id]: e.target.value}))}
+                        min="1"
+                        max={listing.amount}
+                        className="input-field partial-input"
+                      />
+                      <div className="partial-cost">
+                        Cost: <strong>{getCalculatedPrice(listing)} ETH</strong>
+                        {isPartial && <span className="partial-badge">Partial</span>}
+                      </div>
+                    </div>
+                    <button
+                      className="btn-buy"
+                      onClick={() => handleBuyEnergy(listing)}
+                      disabled={loading}
+                    >
+                      {loadingId === listing.id ? '⏳ Buying...' : `⚡ Buy ${buyAmt} kWh`}
+                    </button>
+                  </>
+                )}
               </div>
-              <div className="listing-price">{listing.pricePerUnit} ETH/kWh</div>
-              <div className="listing-total">Total: {listing.totalPrice} ETH</div>
-              <div className="listing-seller">
-                Seller: {listing.seller.slice(0,6)}...{listing.seller.slice(-4)}
-              </div>
-              {listing.seller.toLowerCase() === account.toLowerCase() ? (
-                <div className="own-listing-badge">Your Listing</div>
-              ) : (
-                <button
-                  className="btn-buy"
-                  onClick={() => handleBuyEnergy(listing)}
-                  disabled={loading}
-                >
-                  {loadingId === listing.id ? '⏳ Buying...' : '⚡ Buy Now'}
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

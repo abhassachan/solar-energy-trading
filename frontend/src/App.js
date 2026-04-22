@@ -6,9 +6,11 @@ import { useContractEvents } from './hooks/useContractEvents';
 import ProducerPanel from './components/ProducerPanel';
 import MarketplacePanel from './components/MarketplacePanel';
 import BuyerPanel from './components/BuyerPanel';
+import AuctionPanel from './components/AuctionPanel';
 import TransactionHistory from './components/TransactionHistory';
 import MarketplaceABI from './contracts/Marketplace.json';
 import EnergyTokenABI from './contracts/EnergyToken.json';
+import EnergyAuctionABI from './contracts/EnergyAuction.json';
 import addresses from './contracts/addresses';
 import './App.css';
 
@@ -82,16 +84,35 @@ function App() {
     fetchStats();
   }, [fetchStats]);
 
+  const handleAuctionCreated = useCallback((event) => {
+    toast.success(`New auction: ${event.amount} kWh starting at ${event.startingPrice} ETH`, { icon: '🔨' });
+    fetchStats();
+  }, [fetchStats]);
+
+  const handleBidPlaced = useCallback((event) => {
+    toast.success(`New bid: ${event.bid} ETH on auction #${event.id}`, { icon: '💰' });
+    fetchStats();
+  }, [fetchStats]);
+
+  const handleAuctionEnded = useCallback((event) => {
+    toast.success(`Auction #${event.id} ended! ${event.amount} kWh sold`, { icon: '🏁' });
+    fetchStats();
+  }, [fetchStats]);
+
   useContractEvents(provider, {
     onEnergyListed: handleEnergyListed,
     onEnergyPurchased: handleEnergyPurchased,
-    onListingCancelled: handleListingCancelled
+    onListingCancelled: handleListingCancelled,
+    onAuctionCreated: handleAuctionCreated,
+    onBidPlaced: handleBidPlaced,
+    onAuctionEnded: handleAuctionEnded
   });
 
   const tabs = [
     { id: 'producer', label: 'Producer', icon: '⚡', badge: stats.yourBalance > 0 ? `${stats.yourBalance} kWh` : null },
     { id: 'marketplace', label: 'Marketplace', icon: '🏪', badge: stats.activeListings > 0 ? stats.activeListings : null },
     { id: 'buy', label: 'Buy Energy', icon: '🛒', badge: null },
+    { id: 'auction', label: 'Auctions', icon: '🔨', badge: null },
     { id: 'history', label: 'History', icon: '📜', badge: null },
   ];
 
@@ -210,6 +231,14 @@ function App() {
             )}
             {activeTab === 'buy' && (
               <BuyerPanel
+                signer={signer}
+                account={account}
+                provider={provider}
+                onSuccess={fetchStats}
+              />
+            )}
+            {activeTab === 'auction' && (
+              <AuctionPanel
                 signer={signer}
                 account={account}
                 provider={provider}

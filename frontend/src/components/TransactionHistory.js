@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { toast } from 'react-hot-toast';
 import MarketplaceABI from '../contracts/Marketplace.json';
+import EnergyAuctionABI from '../contracts/EnergyAuction.json';
 import addresses from '../contracts/addresses';
 
 function TransactionHistory({ provider }) {
@@ -13,24 +14,62 @@ function TransactionHistory({ provider }) {
     try {
       setLoading(true);
       toast.loading('Fetching blockchain history...', { id: 'history' });
+      
+      const allTx = [];
+
+      // Fetch marketplace purchase events
       const marketplace = new ethers.Contract(addresses.Marketplace, MarketplaceABI.abi, provider);
-      const filter = marketplace.filters.EnergyPurchased();
-      const events = await marketplace.queryFilter(filter, 0, 'latest');
-      const formatted = await Promise.all(events.map(async (event) => {
+      const purchaseFilter = marketplace.filters.EnergyPurchased();
+      const purchaseEvents = await marketplace.queryFilter(purchaseFilter, 0, 'latest');
+      
+      for (const event of purchaseEvents) {
         const block = await provider.getBlock(event.blockNumber);
-        return {
+        allTx.push({
           txHash: event.transactionHash,
+          type: 'purchase',
           listingId: event.args[0].toString(),
           buyer: event.args[1],
           seller: event.args[2],
           amount: event.args[3].toString(),
           totalPrice: ethers.formatEther(event.args[4]),
           timestamp: new Date(block.timestamp * 1000).toLocaleString(),
-          blockNumber: event.blockNumber
-        };
-      }));
-      setTransactions(formatted.reverse());
-      toast.success(`Loaded ${formatted.length} transactions`, { id: 'history' });
+          blockNumber: event.blockNumber,
+          blockTimestamp: block.timestamp
+        });
+      }
+
+      // Fetch auction ended events
+      if (addresses.EnergyAuction) {
+        const auction = new ethers.Contract(addresses.EnergyAuction, EnergyAuctionABI.abi, provider);
+        const auctionFilter = auction.filters.AuctionEnded();
+        const auctionEvents = await auction.queryFilter(auctionFilter, 0, 'latest');
+
+        for (const event of auctionEvents) {
+          const block = await provider.getBlock(event.blockNumber);
+          const winner = event.args[1];
+          // Skip auctions with no winner (no bids)
+          if (winner === '0x0000000000000000000000000000000000000000') continue;
+          
+          allTx.push({
+            txHash: event.transactionHash,
+            type: 'auction',
+            listingId: `A-${event.args[0].toString()}`,
+            buyer: winner,
+            seller: '—', // seller info not in the event, shown as auction
+            amount: event.args[2].toString(),
+            totalPrice: ethers.formatEther(event.args[3]),
+            timestamp: new Date(block.timestamp * 1000).toLocaleString(),
+            blockNumber: event.blockNumber,
+            blockTimestamp: block.timestamp
+          });
+        }
+      }
+
+      // Sort by block timestamp (newest first)
+      allTx.sort((a, b) => b.blockTimestamp - a.blockTimestamp);
+
+      setTransactions(allTx);
+      toast.success(`Loaded ${allTx.length} transactions`, { id: 'history' });
     } catch (err) {
       toast.error('Failed to fetch history', { id: 'history' });
       console.error(err);
@@ -39,7 +78,10 @@ function TransactionHistory({ provider }) {
     }
   }, [provider]);
 
-  const short = (addr) => `${addr.slice(0,6)}...${addr.slice(-4)}`;
+  const short = (addr) => {
+    if (addr === '—') return '—';
+    return `${addr.slice(0,6)}...${addr.slice(-4)}`;
+  };
 
   return (
     <div className="panel">
@@ -49,7 +91,7 @@ function TransactionHistory({ provider }) {
             <div className="panel-icon icon-yellow">📜</div>
             Transaction History
           </div>
-          <div className="panel-subtitle">All completed P2P energy trades — immutably recorded on blockchain</div>
+          <div className="panel-subtitle">All completed energy trades — fixed-price & auctions — on blockchain</div>
         </div>
         <button className="btn-secondary" onClick={fetchHistory} disabled={loading}>
           {loading ? '⏳ Loading...' : '↻ Load History'}
@@ -66,6 +108,7 @@ function TransactionHistory({ provider }) {
             <table className="tx-table">
               <thead>
                 <tr>
+                  <th>Type</th>
                   <th>ID</th>
                   <th>Amount</th>
                   <th>Price</th>
@@ -78,7 +121,14 @@ function TransactionHistory({ provider }) {
               </thead>
               <tbody>
                 {transactions.map((tx) => (
-                  <tr key={tx.txHash}>
+                  <tr key={tx.txHash + tx.listingId}>
+                    <td>
+                      {tx.type === 'auction' ? (
+                        <span className="type-badge auction-badge">🔨 Auction</span>
+                      ) : (
+                        <span className="type-badge purchase-badge">🛒 Direct</span>
+                      )}
+                    </td>
                     <td className="tx-id">#{tx.listingId}</td>
                     <td className="tx-amount">{tx.amount} kWh</td>
                     <td className="tx-price">{tx.totalPrice} ETH</td>

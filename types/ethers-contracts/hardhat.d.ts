@@ -10,16 +10,20 @@ import * as Contracts from "./index.js";
 
 declare module "@nomicfoundation/hardhat-ethers/types" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
-  getContractFactory(name: 'EnergyToken', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.EnergyToken__factory>
+  getContractFactory(name: 'EnergyAuction', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.EnergyAuction__factory>
+getContractFactory(name: 'EnergyToken', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.EnergyToken__factory>
 getContractFactory(name: 'Marketplace', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Marketplace__factory>
 
-  getContractAt(name: 'EnergyToken', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.EnergyToken>
+  getContractAt(name: 'EnergyAuction', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.EnergyAuction>
+getContractAt(name: 'EnergyToken', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.EnergyToken>
 getContractAt(name: 'Marketplace', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Marketplace>
 
-  deployContract(name: 'EnergyToken', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyToken>
+  deployContract(name: 'EnergyAuction', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyAuction>
+deployContract(name: 'EnergyToken', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyToken>
 deployContract(name: 'Marketplace', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Marketplace>
 
-  deployContract(name: 'EnergyToken', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyToken>
+  deployContract(name: 'EnergyAuction', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyAuction>
+deployContract(name: 'EnergyToken', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.EnergyToken>
 deployContract(name: 'Marketplace', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Marketplace>
 
     // default types

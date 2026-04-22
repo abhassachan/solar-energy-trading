@@ -55,8 +55,8 @@ export function useWallet() {
       window.ethereum.on('chainChanged', () => window.location.reload());
 
       // Listen for account changes
-      window.ethereum.on('accountsChanged', (accounts) => {
-        setAccount(accounts[0] || null);
+      window.ethereum.on('accountsChanged', () => {
+        window.location.reload();
       });
 
     } catch (err) {

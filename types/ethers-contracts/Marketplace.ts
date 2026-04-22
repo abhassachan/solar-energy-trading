@@ -17,7 +17,7 @@ export declare namespace Marketplace {
 
     getEvent(nameOrSignatureOrTopic: "EnergyListed" | "EnergyPurchased" | "ListingCancelled"): EventFragment;
 
-    encodeFunctionData(functionFragment: 'buyEnergy', values: [BigNumberish]): string;
+    encodeFunctionData(functionFragment: 'buyEnergy', values: [BigNumberish, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'cancelListing', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'energyToken', values?: undefined): string;
 encodeFunctionData(functionFragment: 'getActiveListings', values?: undefined): string;
@@ -108,7 +108,7 @@ decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
     
     
     buyEnergy: TypedContractMethod<
-      [listingId: BigNumberish, ],
+      [listingId: BigNumberish, amountToBuy: BigNumberish, ],
       [void],
       'payable'
     >
@@ -174,7 +174,7 @@ decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
 
     getFunction(nameOrSignature: 'buyEnergy'): TypedContractMethod<
-      [listingId: BigNumberish, ],
+      [listingId: BigNumberish, amountToBuy: BigNumberish, ],
       [void],
       'payable'
     >;

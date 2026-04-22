@@ -9,7 +9,8 @@ const addresses = JSON.parse(fs.readFileSync(addressFile, 'utf8'));
 
 const output = `const addresses = {
   EnergyToken: "${addresses['DeployModule#EnergyToken']}",
-  Marketplace: "${addresses['DeployModule#Marketplace']}"
+  Marketplace: "${addresses['DeployModule#Marketplace']}",
+  EnergyAuction: "${addresses['DeployModule#EnergyAuction']}"
 };
 
 export default addresses;
@@ -19,3 +20,4 @@ fs.writeFileSync('./frontend/src/contracts/addresses.js', output);
 console.log('✅ Addresses updated!');
 console.log('EnergyToken:', addresses['DeployModule#EnergyToken']);
 console.log('Marketplace:', addresses['DeployModule#Marketplace']);
+console.log('EnergyAuction:', addresses['DeployModule#EnergyAuction']);

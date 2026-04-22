@@ -69,23 +69,29 @@ contract Marketplace {
     }
 
     /**
-     * @dev Consumer buys energy from a listing
+     * @dev Consumer buys energy from a listing (supports partial purchases)
      * @param listingId ID of the listing to purchase
+     * @param amountToBuy Number of kWh tokens to buy (can be less than listing amount)
      */
-    function buyEnergy(uint256 listingId) external payable {
+    function buyEnergy(uint256 listingId, uint256 amountToBuy) external payable {
         Listing storage listing = listings[listingId];
 
         require(listing.isActive, "Listing is not active");
         require(listing.seller != msg.sender, "Cannot buy your own listing");
+        require(amountToBuy > 0, "Amount must be greater than 0");
+        require(amountToBuy <= listing.amount, "Amount exceeds listing");
 
-        uint256 totalPrice = listing.amount * listing.pricePerUnit;
+        uint256 totalPrice = amountToBuy * listing.pricePerUnit;
         require(msg.value >= totalPrice, "Insufficient ETH sent");
 
-        // Mark listing as inactive BEFORE transfers (security best practice)
-        listing.isActive = false;
+        // Update listing amount BEFORE transfers (security best practice)
+        listing.amount -= amountToBuy;
+        if (listing.amount == 0) {
+            listing.isActive = false;
+        }
 
         // Transfer tokens from contract to buyer
-        uint256 tokenAmount = listing.amount * 10 ** energyToken.decimals();
+        uint256 tokenAmount = amountToBuy * 10 ** energyToken.decimals();
         energyToken.transfer(msg.sender, tokenAmount);
 
         // Transfer ETH payment to seller
@@ -96,7 +102,7 @@ contract Marketplace {
             payable(msg.sender).transfer(msg.value - totalPrice);
         }
 
-        emit EnergyPurchased(listingId, msg.sender, listing.seller, listing.amount, totalPrice);
+        emit EnergyPurchased(listingId, msg.sender, listing.seller, amountToBuy, totalPrice);
     }
 
     /**
