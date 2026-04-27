@@ -9,6 +9,7 @@ import BuyerPanel from './components/BuyerPanel';
 import AuctionPanel from './components/AuctionPanel';
 import CertificatesPanel from './components/CertificatesPanel';
 import TransactionHistory from './components/TransactionHistory';
+import FAQPanel from './components/FAQPanel';
 import MarketplaceABI from './contracts/Marketplace.json';
 import EnergyTokenABI from './contracts/EnergyToken.json';
 import EnergyAuctionABI from './contracts/EnergyAuction.json';
@@ -122,6 +123,7 @@ function App() {
     { id: 'auction', label: 'Auctions', icon: '🔨', badge: null },
     { id: 'certificates', label: 'Certificates', icon: '🎖️', badge: null },
     { id: 'history', label: 'History', icon: '📜', badge: null },
+    { id: 'faq', label: 'Guide', icon: '📘', badge: null },
   ];
 
   return (
@@ -261,6 +263,9 @@ function App() {
             )}
             {activeTab === 'history' && (
               <TransactionHistory provider={provider} />
+            )}
+            {activeTab === 'faq' && (
+              <FAQPanel />
             )}
           </main>
         </>
