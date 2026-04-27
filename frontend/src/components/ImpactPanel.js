@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import MarketplaceABI from '../contracts/Marketplace.json';
+import EnergyTokenABI from '../contracts/EnergyToken.json';
 import addresses from '../contracts/addresses';
 
 function ImpactPanel({ provider, account }) {
   const [chartData, setChartData] = useState([]);
+  const [efficiencyData, setEfficiencyData] = useState([]);
   const [totalOffset, setTotalOffset] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -53,6 +55,24 @@ function ImpactPanel({ provider, account }) {
       dateMap.forEach((offset, date) => {
         aggregatedData.push({ date, 'CO2 Offset (kg)': offset });
       });
+
+      // Fetch EnergyGenerated (Minted) events
+      const tokenContract = new ethers.Contract(addresses.EnergyToken, EnergyTokenABI.abi, provider);
+      const mintFilter = tokenContract.filters.EnergyGenerated(account);
+      const mintEvents = await tokenContract.queryFilter(mintFilter, 0, 'latest');
+      
+      let totalMinted = 0;
+      mintEvents.forEach(e => {
+        totalMinted += Number(e.args[1].toString());
+      });
+
+      setEfficiencyData([
+        {
+          name: 'Total Energy (kWh)',
+          Produced: totalMinted,
+          Distributed: cumulativeKwh
+        }
+      ]);
 
       setTotalOffset((cumulativeKwh * CO2_PER_KWH).toFixed(2));
       setChartData(aggregatedData);
@@ -138,6 +158,33 @@ function ImpactPanel({ provider, account }) {
                 animationDuration={1500}
               />
             </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      <div className="section-title" style={{ marginTop: '3rem' }}>
+        Energy Produced vs. Distributed
+      </div>
+      <div className="panel-subtitle" style={{ marginBottom: '1rem' }}>
+        Compare how much energy you've minted against how much you've successfully sold to the network.
+      </div>
+
+      <div style={{ width: '100%', height: 300, background: 'rgba(255,255,255,0.02)', padding: '20px 20px 0 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        {loading ? (
+          <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#8b949e' }}>
+            Loading impact data...
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={efficiencyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }} barGap={20} barSize={60}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e2d3d" vertical={false} />
+              <XAxis dataKey="name" stroke="#8b949e" tick={{ fill: '#8b949e', fontSize: 14 }} tickLine={false} axisLine={false} />
+              <YAxis stroke="#8b949e" tick={{ fill: '#8b949e', fontSize: 12 }} tickLine={false} axisLine={false} />
+              <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{ backgroundColor: 'rgba(13,17,23,0.9)', border: '1px solid #1e2d3d', borderRadius: '4px', color: '#e8f4f8' }} itemStyle={{ fontWeight: 'bold' }} />
+              <Legend verticalAlign="top" height={36} wrapperStyle={{ color: '#8b949e' }} />
+              <Bar dataKey="Produced" fill="#1e90ff" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Distributed" fill="#00ff88" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         )}
       </div>
