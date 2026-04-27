@@ -11,6 +11,7 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
   const [buyAmounts, setBuyAmounts] = useState({});
+  const [sortBy, setSortBy] = useState('newest');
 
   const getTokenContract = () => new ethers.Contract(addresses.EnergyToken, EnergyTokenABI.abi, signer);
   const getMarketplaceContract = () => new ethers.Contract(addresses.Marketplace, MarketplaceABI.abi, signer);
@@ -91,6 +92,15 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
     }
   };
 
+  const sortedListings = [...listings].sort((a, b) => {
+    if (sortBy === 'lowest_price') {
+      return Number(a.pricePerUnit) - Number(b.pricePerUnit);
+    } else if (sortBy === 'highest_amount') {
+      return b.amount - a.amount;
+    }
+    return Number(b.id) - Number(a.id);
+  });
+
   return (
     <div className="panel">
       <div className="panel-header">
@@ -114,18 +124,30 @@ function BuyerPanel({ signer, account, provider, onSuccess }) {
       </div>
 
       {/* Listings */}
-      <div className="section-title">
-        Available Energy
-        <span style={{color: 'var(--accent)', fontFamily: 'Space Mono'}}>
-          {listings.length} available
-        </span>
+      <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          Available Energy
+          <span style={{color: 'var(--accent)', fontFamily: 'Space Mono', marginLeft: '10px'}}>
+            {listings.length} available
+          </span>
+        </div>
+        <select 
+          className="input-field" 
+          style={{ width: 'auto', padding: '0.4rem 1rem', marginBottom: '0', fontSize: '0.9rem', backgroundColor: '#16202c', color: '#e8f4f8', border: '1px solid #1e2d3d', borderRadius: '4px' }}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+        >
+          <option value="newest">Newest First</option>
+          <option value="lowest_price">Lowest Price</option>
+          <option value="highest_amount">Highest Amount</option>
+        </select>
       </div>
 
       {listings.length === 0 ? (
         <p className="no-listings">No energy available. Check back soon!</p>
       ) : (
         <div className="listings-grid">
-          {listings.map(listing => {
+          {sortedListings.map(listing => {
             const buyAmt = getBuyAmount(listing);
             const isPartial = buyAmounts[listing.id] !== undefined && buyAmounts[listing.id] !== '' && Number(buyAmounts[listing.id]) < listing.amount;
             
