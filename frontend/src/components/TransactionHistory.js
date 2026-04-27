@@ -8,6 +8,8 @@ import addresses from '../contracts/addresses';
 function TransactionHistory({ provider }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchHistory = useCallback(async () => {
     if (!provider) return;
@@ -83,6 +85,9 @@ function TransactionHistory({ provider }) {
     return `${addr.slice(0,6)}...${addr.slice(-4)}`;
   };
 
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+  const currentTransactions = transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="panel">
       <div className="panel-header">
@@ -120,7 +125,7 @@ function TransactionHistory({ provider }) {
                 </tr>
               </thead>
               <tbody>
-                {transactions.map((tx) => (
+                {currentTransactions.map((tx) => (
                   <tr key={tx.txHash + tx.listingId}>
                     <td>
                       {tx.type === 'auction' ? (
@@ -151,9 +156,30 @@ function TransactionHistory({ provider }) {
               </tbody>
             </table>
           </div>
-          <p className="tx-count">
-            Total trades: <strong style={{color:'var(--accent)'}}>{transactions.length}</strong>
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+            <p className="tx-count" style={{ margin: 0 }}>
+              Total trades: <strong style={{color:'var(--accent)'}}>{transactions.length}</strong>
+            </p>
+            <div className="pagination-controls" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <button 
+                className="btn-secondary" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                style={{ padding: '0.3rem 0.8rem' }}
+              >
+                Prev
+              </button>
+              <span style={{ fontSize: '0.9rem' }}>Page {currentPage} of {totalPages || 1}</span>
+              <button 
+                className="btn-secondary" 
+                disabled={currentPage >= totalPages || totalPages === 0} 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                style={{ padding: '0.3rem 0.8rem' }}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </>
       )}
     </div>
