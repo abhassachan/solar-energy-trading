@@ -8,6 +8,7 @@ import MarketplacePanel from './components/MarketplacePanel';
 import BuyerPanel from './components/BuyerPanel';
 import AuctionPanel from './components/AuctionPanel';
 import CertificatesPanel from './components/CertificatesPanel';
+import ImpactPanel from './components/ImpactPanel';
 import TransactionHistory from './components/TransactionHistory';
 import FAQPanel from './components/FAQPanel';
 import MarketplaceABI from './contracts/Marketplace.json';
@@ -122,6 +123,7 @@ function App() {
     { id: 'buy', label: 'Buy Energy', icon: '🛒', badge: null },
     { id: 'auction', label: 'Auctions', icon: '🔨', badge: null },
     { id: 'certificates', label: 'Certificates', icon: '🎖️', badge: null },
+    { id: 'impact', label: 'My Impact', icon: '🌍', badge: null },
     { id: 'history', label: 'History', icon: '📜', badge: null },
     { id: 'faq', label: 'Guide', icon: '📘', badge: null },
   ];
@@ -257,6 +259,12 @@ function App() {
             )}
             {activeTab === 'certificates' && (
               <CertificatesPanel
+                provider={provider}
+                account={account}
+              />
+            )}
+            {activeTab === 'impact' && (
+              <ImpactPanel
                 provider={provider}
                 account={account}
               />
