@@ -8,6 +8,7 @@ function ProducerPanel({ signer, account, onSuccess }) {
   const [amount, setAmount] = useState('');
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const getContract = () => new ethers.Contract(
     addresses.EnergyToken, EnergyTokenABI.abi, signer
@@ -15,9 +16,11 @@ function ProducerPanel({ signer, account, onSuccess }) {
 
   const handleGenerateEnergy = async () => {
     if (!amount || amount <= 0) {
+      setErrorMsg('Please enter a valid positive amount (e.g. 10)');
       toast.error('Please enter a valid amount');
       return;
     }
+    setErrorMsg('');
     try {
       setLoading(true);
       toast.loading('Confirm in MetaMask...', { id: 'mint' });
@@ -73,10 +76,15 @@ function ProducerPanel({ signer, account, onSuccess }) {
           type="number"
           placeholder="e.g. 10"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => {
+            setAmount(e.target.value);
+            if (e.target.value > 0) setErrorMsg('');
+          }}
           min="1"
-          className="input-field"
+          className={`input-field ${errorMsg ? 'input-error' : ''}`}
+          style={errorMsg ? { border: '1px solid #ff4444' } : {}}
         />
+        {errorMsg && <div style={{ color: '#ff4444', fontSize: '0.85rem', marginTop: '0.5rem' }}>{errorMsg}</div>}
       </div>
 
       <button
