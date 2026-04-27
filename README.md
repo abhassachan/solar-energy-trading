@@ -1,57 +1,80 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# SolarTrade DApp
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+**SolarTrade** is a decentralized peer-to-peer energy trading platform. It empowers solar energy producers to tokenize their surplus energy and sell it directly to consumers via a secure, transparent blockchain marketplace.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## Key Features
 
-## Project Overview
+- **Energy Tokenization:** Mint ENRG tokens representing 1 kWh of surplus solar energy.
+- **P2P Marketplace:** List energy for sale at fixed prices or purchase from other producers without intermediaries.
+- **Energy Auctions:** Create and manage timed auctions for bulk energy sales to the highest bidder.
+- **Green Impact Certificates:** Issue dynamic, evolving ERC721 NFT certificates based on total traded volume to quantify renewable energy contributions.
+- **Analytics Dashboard:** Monitor real-world environmental impact metrics, including carbon dioxide (CO2) offsets, equivalent trees planted, and homes powered.
 
-This example project includes:
+## Technology Stack
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+- **Smart Contracts:** Solidity, OpenZeppelin
+- **Blockchain Environment:** Hardhat, Ethers.js
+- **Frontend Framework:** React.js
+- **Data Visualization:** Recharts
+- **Styling:** Custom CSS
 
-## Usage
+## Getting Started
 
-### Running Tests
+### Prerequisites
+- Node.js (v18 or higher)
+- MetaMask browser extension
 
-To run all the tests in the project, execute the following command:
+### Installation
 
-```shell
-npx hardhat test
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/abhassachan/solar-energy-trading.git
+   cd solar-energy-trading
+   ```
+
+2. **Install Dependencies:**
+   ```bash
+   npm install
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+### Running Locally
+
+To run the application locally, two separate terminal instances are required.
+
+**Terminal 1: Local Blockchain & Deployment**
+Start the local Hardhat node:
+```bash
+npx hardhat node
+```
+Leave this terminal running. Open a new terminal window in the root directory and deploy the smart contracts:
+```bash
+npm run deploy
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
-
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
+**Terminal 2: React Frontend**
+Navigate to the frontend directory and start the development server:
+```bash
+cd frontend
+npm start
 ```
 
-### Make a deployment to Sepolia
+### MetaMask Configuration
+1. Open MetaMask and add a custom network with the following details:
+   - **Network Name:** Hardhat Local
+   - **RPC URL:** `http://127.0.0.1:8545`
+   - **Chain ID:** `31337`
+   - **Currency Symbol:** `ETH`
+2. Import one of the private keys provided by the Hardhat node terminal to acquire test ETH for transactions.
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+## Smart Contract Architecture
 
-To run the deployment to a local chain:
+- `EnergyToken.sol`: Custom ERC20 token contract representing generated solar energy.
+- `Marketplace.sol`: Manages the direct peer-to-peer listing and purchasing of energy tokens.
+- `EnergyAuction.sol`: Manages timed auctions, bid processing, and finalization protocols.
+- `EnergyCertificate.sol`: ERC721 NFT contract responsible for minting evolving impact certificates to active market participants.
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
-```
-
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+## License
+This project is licensed under the MIT License.
