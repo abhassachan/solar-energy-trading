@@ -9,6 +9,7 @@ function ImpactPanel({ provider, account }) {
   const [chartData, setChartData] = useState([]);
   const [efficiencyData, setEfficiencyData] = useState([]);
   const [totalOffset, setTotalOffset] = useState(0);
+  const [totalDistributed, setTotalDistributed] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // 1 kWh = roughly 0.4 kg of CO2 offset
@@ -75,6 +76,7 @@ function ImpactPanel({ provider, account }) {
       ]);
 
       setTotalOffset((cumulativeKwh * CO2_PER_KWH).toFixed(2));
+      setTotalDistributed(cumulativeKwh);
       setChartData(aggregatedData);
     } catch (err) {
       console.error('Failed to fetch impact data:', err);
@@ -187,6 +189,39 @@ function ImpactPanel({ provider, account }) {
             </BarChart>
           </ResponsiveContainer>
         )}
+      </div>
+
+      <div className="section-title" style={{ marginTop: '3rem' }}>
+        Real-World Equivalents
+      </div>
+      <div className="panel-subtitle" style={{ marginBottom: '1rem' }}>
+        What does your distributed solar energy mean for the physical world?
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🌲</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#00ff88', fontFamily: 'Space Mono' }}>
+            {totalOffset > 0 ? (totalOffset / 21).toFixed(1) : 0}
+          </div>
+          <div style={{ color: '#8b949e', fontSize: '0.9rem', marginTop: '0.5rem' }}>Trees Grown for 1 Year</div>
+        </div>
+
+        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏠</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e90ff', fontFamily: 'Space Mono' }}>
+            {totalDistributed > 0 ? Math.floor(totalDistributed / 30) : 0}
+          </div>
+          <div style={{ color: '#8b949e', fontSize: '0.9rem', marginTop: '0.5rem' }}>Homes Powered for a Day</div>
+        </div>
+
+        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>⛽</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ffaa00', fontFamily: 'Space Mono' }}>
+            {totalDistributed > 0 ? (totalDistributed * 0.25).toFixed(1) : 0} <span style={{ fontSize: '1rem' }}>L</span>
+          </div>
+          <div style={{ color: '#8b949e', fontSize: '0.9rem', marginTop: '0.5rem' }}>Gasoline Avoided</div>
+        </div>
       </div>
     </div>
   );
